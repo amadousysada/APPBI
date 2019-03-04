@@ -8,13 +8,21 @@ data = pd.read_csv("base_prospect.csv", encoding='latin-1')
 labels =[ 'dept', 'effectif', 'ca_total_FL', 'ca_export_FK', 'endettement',
        'evo_benefice', 'ratio_benef', 'evo_effectif', 'evo_risque', 'age',
        'chgt_dir', 'rdv']
-for label in data.columns:
+'''for label in data.columns:
 	nan  = data.loc[lambda df: df[label].isnull()]
 	nombre = len(nan[label])
 	percent = (nombre*100)/np.size(data,0)
-	print("=========="+label+"==========")
-	print("nombre 	:"+str(nombre))
-	print("Pourcentage 	:"+str(percent))
+	if(percent >0):
+                print("=========="+label+"==========")
+                print("nombre 	:"+str(nombre))
+                print("Pourcentage 	:"+str(percent))
+                plt.pie([percent,100-percent], labels=["NA","other"], autopct='%.0f%%', shadow=True,)
+                plt.title(label)
+                
+                plt.show()'''
+plt.plot(data.ca_total_FL,data.ratio_benef)
+#plt.scatter(data.ca_total_FL,data.ratio_benef)
+plt.savefig("corr")
 exit()
 for label in labels:
 	data[label]=data[label].apply(lambda x: x if pd.notnull(x) else 1.0) 
