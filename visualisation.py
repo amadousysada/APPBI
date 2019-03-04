@@ -1,28 +1,71 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import pandas as pd
 import numpy as np
 from matplotlib import cm
 import matplotlib.pyplot as plt
+from pandas.plotting import radviz
+
+cmap = cm.get_cmap('gnuplot')
 
 data = pd.read_csv("base_prospect.csv", encoding='latin-1')
 
 labels =[ 'dept', 'effectif', 'ca_total_FL', 'ca_export_FK', 'endettement',
        'evo_benefice', 'ratio_benef', 'evo_effectif', 'evo_risque', 'age',
        'chgt_dir', 'rdv']
-'''for label in data.columns:
+
+for label in data.columns:
 	nan  = data.loc[lambda df: df[label].isnull()]
 	nombre = len(nan[label])
-	percent = (nombre*100)/np.size(data,0)
+	percent = (nombre*100)/float(np.size(data,0))
 	if(percent >0):
                 print("=========="+label+"==========")
                 print("nombre 	:"+str(nombre))
                 print("Pourcentage 	:"+str(percent))
                 plt.pie([percent,100-percent], labels=["NA","other"], autopct='%.0f%%', shadow=True,)
                 plt.title(label)
-                
-                plt.show()'''
-plt.plot(data.ca_total_FL,data.ratio_benef)
+                plt.savefig(label)
+#plt.plot(data.ca_total_FL,data.ratio_benef)
 #plt.scatter(data.ca_total_FL,data.ratio_benef)
-plt.savefig("corr")
+#plt.savefig("corr")
+
+#Encodage et nature de données.
+"""
+  ==========ca_export_FK==========
+  nombre  :6477
+  Pourcentage   :5.96540671972
+  iL ya de valeurs manquantes dans cette colonne correspondant à 5.97 % des donnees de la base.
+  => Correspond à 6477, un chiffre non negligeable.
+  Solutions:
+    - remplacement des valeurs par la moyenne de la plage de valeurs grace à la classe SimpleImputer de la librairie sklearn.
+
+"""
+
+"""
+   ==========risque==========
+  nombre  :936
+  Pourcentage   :0.862068965517
+
+  Pourcentage trés faible correspondant à  936 lignes.
+  => suppression des lignes
+"""
+
+"""
+  ==========evo_risque==========
+  nombre  :1538
+  Pourcentage   :1.41651930445
+
+"""
+
+"""
+==========type_com==========
+nombre  :1079
+Pourcentage   :0.99377394636
+==========chgt_dir==========
+nombre  :35766
+Pourcentage   :32.9409814324
+"""
 exit()
 for label in labels:
 	data[label]=data[label].apply(lambda x: x if pd.notnull(x) else 1.0) 
