@@ -23,9 +23,10 @@ for label in data.columns:
                 print("=========="+label+"==========")
                 print("nombre 	:"+str(nombre))
                 print("Pourcentage 	:"+str(percent))
-                plt.pie([percent,100-percent], labels=["NA","other"], autopct='%.0f%%', shadow=True,)
+                plt.pie([percent,100-percent], labels=["NA","other"], autopct='%.0f%%')
                 plt.title(label)
                 plt.savefig(label)
+                plt.close()
 #plt.plot(data.ca_total_FL,data.ratio_benef)
 #plt.scatter(data.ca_total_FL,data.ratio_benef)
 #plt.savefig("corr")
@@ -50,21 +51,44 @@ for label in data.columns:
   Pourcentage trés faible correspondant à  936 lignes.
   => suppression des lignes
 """
+risque_undefined_rows = data.loc[lambda df: df['risque'].isnull()]
+data.drop(risque_undefined_rows.index)
+
 
 """
   ==========evo_risque==========
   nombre  :1538
   Pourcentage   :1.41651930445
 
+  Pourcentage faible correspondant à 1538 ligne.
+
+  On remarque aussi que 87% de ces instances(où evo_risque == NA) on pour valeur de rdv =0.
+  vu qu'à la base 89.7 % des instances de la base on un rdv =0, donc la meilleure solution est d'effacer
+  toutes les instances dont la colonne evo_risque == NA pour que cet attribut soit un peu plus discrminant pour l'attribut rdv.
+  
 """
+evo_risque_undefined_rows = data.loc[lambda df: df['evo_risque'].isnull()]
+data.drop(evo_risque_undefined_rows.index)
+
+
 
 """
-==========type_com==========
-nombre  :1079
-Pourcentage   :0.99377394636
-==========chgt_dir==========
-nombre  :35766
-Pourcentage   :32.9409814324
+  ==========type_com==========
+  nombre  :1079
+  Pourcentage   :0.99377394636
+  pourcentage trés faible correspondant à 1079 lignes.
+"""
+type_com_undefined_rows = data.loc[lambda df: df['type_com'].isnull()]
+data.drop(evo_risque_undefined_rows.index)
+
+
+"""
+  ==========chgt_dir==========
+  nombre  :35766
+  Pourcentage   :32.9409814324
+  attribut de nature catégoricale encodé en numérique [0,1].
+  pourcentage trés elevés.
+  La meilleure solution est de créer une nouvelle categorie reprensenté par 2.
 """
 exit()
 for label in labels:
