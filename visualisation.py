@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from pandas.plotting import radviz
 from sklearn.impute import SimpleImputer
 import math
-
+from sklearn import svm
 
 cmap = cm.get_cmap('gnuplot')
 
@@ -43,11 +43,14 @@ for label in data.columns:
 
   Pourcentage trés faible correspondant à  936 lignes.
   => suppression des lignes
+  les notes sont supposées etre toutes superieur ou égal à 7.
+  donc on supprime aussi les instances don le risaue est "1-6"
   Encodage:
 
 """
-risque_undefined_rows = data.loc[lambda df: df['risque'].isnull()]
-data.drop(risque_undefined_rows.index)
+risque_undefined_rows = data.loc[lambda df: df['risque'].isna()]
+
+data = data.drop(risque_undefined_rows.index)
 
 
 """
@@ -62,8 +65,8 @@ data.drop(risque_undefined_rows.index)
   toutes les instances dont la colonne evo_risque == NA pour que cet attribut soit un peu plus discrminant pour l'attribut rdv.
   
 """
-evo_risque_undefined_rows = data.loc[lambda df: df['evo_risque'].isnull()]
-data.drop(evo_risque_undefined_rows.index)
+evo_risque_undefined_rows = data.loc[lambda df: df['evo_risque'].isna()]
+data = data.drop(evo_risque_undefined_rows.index)
 
 
 
@@ -73,8 +76,8 @@ data.drop(evo_risque_undefined_rows.index)
   Pourcentage   :0.99377394636
   pourcentage trés faible correspondant à 1079 lignes.
 """
-type_com_undefined_rows = data.loc[lambda df: df['type_com'].isnull()]
-data.drop(evo_risque_undefined_rows.index)
+type_com_undefined_rows = data.loc[lambda df: df['type_com'].isna()]
+data =data.drop(type_com_undefined_rows.index)
 
 """
   ==========chgt_dir==========
@@ -97,7 +100,26 @@ data['chgt_dir']=data['chgt_dir'].apply(lambda x: 2 if math.isnan(x) else x)
 
 """
 imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
-imp_mean.fit(data[['ca_export_FK','evo_risque']])
+data[['ca_export_FK','evo_risque']]=imp_mean.fit_transform(data[['ca_export_FK','evo_risque']])
+
+print("secon =================================================")
+for label in data.columns:
+  nan  = data.loc[lambda df: df[label].isnull()]
+  nombre = len(nan[label])
+  percent = (nombre*100)/float(np.size(data,0))
+  if(percent >0):
+                print("=========="+label+"==========")
+                print("nombre   :"+str(nombre))
+                print("Pourcentage  :"+str(percent))
+                plt.pie([percent,100-percent], labels=["NA","other"], autopct='%.0f%%')
+                plt.title(label)
+                plt.savefig(label)
+                plt.close()
+#plt.plot(data.ca_total_FL,data.ratio_
+
+clf = svm.SVC(gamma='scale')
+labels.remove('rdv')
+clf.fit(data[labels], data['rdv'])
 
 exit()
 for label in labels:
