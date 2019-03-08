@@ -9,6 +9,11 @@ from pandas.plotting import radviz
 from sklearn.impute import SimpleImputer
 import math
 from sklearn import svm
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from R_square_clustering import r_square
+from sklearn. cluster import KMeans
+from mpl_toolkits.mplot3d import Axes3D
 
 cmap = cm.get_cmap('gnuplot')
 
@@ -102,26 +107,51 @@ data['chgt_dir']=data['chgt_dir'].apply(lambda x: 2 if math.isnan(x) else x)
 imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
 data[['ca_export_FK','evo_risque']]=imp_mean.fit_transform(data[['ca_export_FK','evo_risque']])
 
-print("secon =================================================")
-for label in data.columns:
-  nan  = data.loc[lambda df: df[label].isnull()]
-  nombre = len(nan[label])
-  percent = (nombre*100)/float(np.size(data,0))
-  if(percent >0):
-                print("=========="+label+"==========")
-                print("nombre   :"+str(nombre))
-                print("Pourcentage  :"+str(percent))
-                plt.pie([percent,100-percent], labels=["NA","other"], autopct='%.0f%%')
-                plt.title(label)
-                plt.savefig(label)
-                plt.close()
-#plt.plot(data.ca_total_FL,data.ratio_
+standardscaler = preprocessing.StandardScaler()
+
+'''
+  CLASSIFICATION NON SUPERVISE( k-MEAN)
+'''
+labels.remove('rdv')
+labels.remove('dept')
+
+X_norm = standardscaler.fit_transform(data[labels])
+lst_k=range(1,20)
+lst_rsq = []
+for k in lst_k:
+    est=KMeans(n_clusters=k)
+    est.fit (X_norm)
+    lst_rsq.append(r_square(X_norm, est.cluster_centers_,est.labels_,k))
+fig = plt. figure ()
+plt.plot(lst_k, lst_rsq, 'bx-')
+plt.xlabel('k')
+plt.ylabel('RSQ')
+plt.title ('The Elbow Method showing the optimal k')
+plt.savefig('r_square')
+plt.close(fig)
+
+est=KMeans(n_clusters=11)
+#fig = plt.figure(1, figsize=(4, 3))
+#ax = Axes3D(fig, rect=[0, 0, .95, 1], elev=48, azim=134)
+est.fit(data[labels])
+
+centroids = est.cluster_centers_
+plt.scatter(centroids[:, 0], centroids[:, 1],
+            marker='o',
+            c='w')
+
+plt.title("11 clusters")
+plt.show()
+exit()
 
 clf = svm.SVC(gamma='scale')
-labels.remove('rdv')
-clf.fit(data[labels], data['rdv'])
 
+labels.remove('rdv')
+X_norm = standardscaler.fit_transform(data[labels])
+X_train, X_test, y_train, y_test = train_test_split(data[labels], data['rdv'], test_size = 0.20) 
+clf.fit(X_train, y_train)
 exit()
+
 for label in labels:
 	data[label]=data[label].apply(lambda x: x if pd.notnull(x) else 1.0) 
 print(min(data.age))
