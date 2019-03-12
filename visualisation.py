@@ -15,6 +15,8 @@ for label in data.columns:
 	print("=========="+label+"==========")
 	print("nombre 	:"+str(nombre))
 	print("Pourcentage 	:"+str(percent))
+
+print(data.loc[lambda df: df["ca_total_FL"]==-162].index)
 exit()
 for label in labels:
 	data[label]=data[label].apply(lambda x: x if pd.notnull(x) else 1.0) 
