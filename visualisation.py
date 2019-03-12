@@ -165,4 +165,3 @@ df.astype('int64')
 for attr in labels:
 	df[attr].plot.hist()
 	plt.savefig ('distribution_'+attr)
->>>>>>> 77245fb89f2aa7967066f5f4b3536e7a04ec460a
