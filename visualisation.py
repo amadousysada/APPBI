@@ -14,6 +14,9 @@ from sklearn.model_selection import train_test_split
 from R_square_clustering import r_square
 from sklearn. cluster import KMeans
 from mpl_toolkits.mplot3d import Axes3D
+from sklearn.decomposition import PCA
+from scipy.cluster import hierarchy
+
 
 cmap = cm.get_cmap('gnuplot')
 
@@ -116,9 +119,10 @@ labels.remove('rdv')
 labels.remove('dept')
 
 X_norm = standardscaler.fit_transform(data[labels])
+
 lst_k=range(1,20)
 lst_rsq = []
-for k in lst_k:
+'''for k in lst_k:
     est=KMeans(n_clusters=k)
     est.fit (X_norm)
     lst_rsq.append(r_square(X_norm, est.cluster_centers_,est.labels_,k))
@@ -128,40 +132,41 @@ plt.xlabel('k')
 plt.ylabel('RSQ')
 plt.title ('The Elbow Method showing the optimal k')
 plt.savefig('r_square')
-plt.close(fig)
+plt.close(fig)'''
 
+pca = PCA()
+X_pca = pca.fit_transform(X_norm)
+n = np.size(X_norm, 0)
+p = np.size(X_norm, 1)
+eigval = float(n-1)/n*pca.explained_variance_
+
+sqrt_eigval = np.sqrt(eigval)
+corvar = np.zeros((p,p))
+for k in range(p):
+    corvar [:, k] = pca.components_[k,:]*sqrt_eigval[k]
+
+axes = pd.DataFrame(data=X_pca, columns = ["axe0","axe1","axe2","axe3","ax4","axe5","axe6","axe7","axe8","axe9"])
+d = pd.DataFrame(X_norm, columns=labels)
+df = pd.concat([axes, data.loc[lambda df:df.index<len(axes)]], axis = 1)
+print(df)
+exit()
+cmap = cm.get_cmap('gnuplot')
 est=KMeans(n_clusters=11)
-#fig = plt.figure(1, figsize=(4, 3))
-#ax = Axes3D(fig, rect=[0, 0, .95, 1], elev=48, azim=134)
+
 est.fit(data[labels])
 
+plt.scatter(data.loc[:,"ca_total_FL"], data.loc[:,"ratio_benef"],marker='o', c=data['rdv'])
 centroids = est.cluster_centers_
 plt.scatter(centroids[:, 0], centroids[:, 1],
             marker='o',
-            c='w')
+            cmap=cmap)
 
 plt.title("11 clusters")
-plt.show()
+plt.savefig("kmeans")
 exit()
-
 clf = svm.SVC(gamma='scale')
 
-labels.remove('rdv')
 X_norm = standardscaler.fit_transform(data[labels])
 X_train, X_test, y_train, y_test = train_test_split(data[labels], data['rdv'], test_size = 0.20) 
 clf.fit(X_train, y_train)
 exit()
-
-for label in labels:
-	data[label]=data[label].apply(lambda x: x if pd.notnull(x) else 1.0) 
-print(min(data.age))
-exit()
-cmap = cm.get_cmap('gnuplot')
-df = data[labels]
-df.astype('int64')
-#pd.plotting.scatter_matrix(df,c= data['dept'], s=40, hist_kwds={'bins':15}, figsize=(9,9), cmap = cmap)
-#data.plot.hist()
-#pd.plotting.scatter_matrix(data,c= data['effectif'], s=40, hist_kwds={'bins':15}, figsize=(9,9), cmap = cmap, diagonal="kde")
-for attr in labels:
-	df[attr].plot.hist()
-	plt.savefig ('distribution_'+attr)
