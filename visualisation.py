@@ -111,7 +111,9 @@ imp_mean = SimpleImputer(missing_values=np.nan, strategy='mean')
 data[['ca_export_FK','evo_risque']]=imp_mean.fit_transform(data[['ca_export_FK','evo_risque']])
 
 standardscaler = preprocessing.StandardScaler()
-
+'''
+profil : geographique
+'''
 '''
   CLASSIFICATION NON SUPERVISE( k-MEAN)
 '''
@@ -134,27 +136,42 @@ plt.title ('The Elbow Method showing the optimal k')
 plt.savefig('r_square')
 plt.close(fig)'''
 
-pca = PCA()
-X_pca = pca.fit_transform(X_norm)
-n = np.size(X_norm, 0)
-p = np.size(X_norm, 1)
-eigval = float(n-1)/n*pca.explained_variance_
 
-sqrt_eigval = np.sqrt(eigval)
-corvar = np.zeros((p,p))
-for k in range(p):
-    corvar [:, k] = pca.components_[k,:]*sqrt_eigval[k]
-
-axes = pd.DataFrame(data=X_pca, columns = ["axe0","axe1","axe2","axe3","ax4","axe5","axe6","axe7","axe8","axe9"])
-d = pd.DataFrame(X_norm, columns=labels)
-df = pd.concat([axes, data.loc[lambda df:df.index<len(axes)]], axis = 1)
-print(df)
-exit()
 cmap = cm.get_cmap('gnuplot')
 est=KMeans(n_clusters=11)
 
-est.fit(data[labels])
 
+data['clusters'] = est.fit_predict(data[labels])
+labels.extend(['clusters','rdv','dept','code_cr','x','y'])
+pca = PCA(n_components=2)
+data['x'] = pca.fit_transform(X_norm)[:,0]
+data['y'] = pca.fit_transform(X_norm)[:,1]
+
+centroids = est.cluster_centers_
+'''plt.scatter(centroids[:, 0], centroids[:, 1],
+            marker='d',
+            cmap=cmap)
+plt.scatter(data.loc[lambda df:df['rdv']==0]['x'], data.loc[lambda df:df['rdv']==0]['y'],marker='o', cmap=cmap)
+'''
+
+# Pie chart, where the slices will be ordered and plotted counter-clockwise:
+labs = ['cluster 1', 'cluster 2', 'cluster 3', 'cluster 4', 'cluster 5', 'cluster 6', 'cluster 7', 'cluster 8','cluster 9','cluster 10','cluster 11']
+m=[]
+gt = data.loc[lambda df:df['rdv']==1.0].groupby('clusters').count()['rdv']
+for lab in labs:
+	m.append(gt[labs.index(lab)])
+explode = (0, 0.1, 0, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
+print(m)
+exit()
+fig1, ax1 = plt.subplots()
+ax1.pie(m, labels=labs, autopct='%1.1f%%',
+        shadow=True, startangle=90)
+ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+plt.show()
+plt.title("11 clusters")
+plt.savefig("kmeans0")
+exit()
 plt.scatter(data.loc[:,"ca_total_FL"], data.loc[:,"ratio_benef"],marker='o', c=data['rdv'])
 centroids = est.cluster_centers_
 plt.scatter(centroids[:, 0], centroids[:, 1],
